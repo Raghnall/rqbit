@@ -194,6 +194,9 @@ pub struct ManagedTorrentShared {
     pub(crate) magnet_name: Option<String>,
 
     pub(crate) client_name_and_version: String,
+
+    /// Unix timestamp (seconds) when the torrent was added to the session.
+    pub date_added: u64,
 }
 
 impl ManagedTorrentShared {

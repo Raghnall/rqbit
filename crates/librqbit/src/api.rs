@@ -224,6 +224,7 @@ impl Api {
                             .to_string_lossy()
                             .into_owned(),
                         total_pieces,
+                        date_added: mgr.shared().date_added,
 
                         // These will be filled in /details and /stats endpoints
                         files: None,
@@ -250,6 +251,7 @@ impl Api {
             .to_string_lossy()
             .into_owned()
             .to_string();
+        let date_added = handle.shared().date_added;
         make_torrent_details(
             Some(handle.id()),
             &info_hash,
@@ -257,6 +259,7 @@ impl Api {
             handle.name().as_deref(),
             only_files.as_deref(),
             output_folder,
+            date_added,
         )
     }
 
@@ -398,6 +401,7 @@ impl Api {
                         .output_folder
                         .to_string_lossy()
                         .into_owned(),
+                    handle.shared().date_added,
                 )
                 .context("error making torrent details")?;
                 ApiAddTorrentResponse {
@@ -430,6 +434,7 @@ impl Api {
                     None,
                     only_files.as_deref(),
                     output_folder.to_string_lossy().into_owned().to_string(),
+                    0,
                 )
                 .context("error making torrent details")?,
             },
@@ -446,6 +451,7 @@ impl Api {
                         .output_folder
                         .to_string_lossy()
                         .into_owned(),
+                    handle.shared().date_added,
                 )
                 .context("error making torrent details")?;
                 ApiAddTorrentResponse {
@@ -545,6 +551,11 @@ pub struct TorrentDetailsResponse {
     #[serde(default)]
     pub total_pieces: u32,
 
+    /// Unix timestamp (seconds) when the torrent was added to the session.
+    /// 0 means the value was not recorded (e.g. loaded from an old session file).
+    #[serde(default)]
+    pub date_added: u64,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub files: Option<Vec<TorrentDetailsResponseFile>>,
     #[serde(skip_serializing_if = "Option::is_none", skip_deserializing)]
@@ -566,6 +577,7 @@ fn make_torrent_details(
     name: Option<&str>,
     only_files: Option<&[usize]>,
     output_folder: String,
+    date_added: u64,
 ) -> Result<TorrentDetailsResponse> {
     let files = match info {
         Some(info) => info
@@ -596,6 +608,7 @@ fn make_torrent_details(
         files: Some(files),
         output_folder,
         total_pieces,
+        date_added,
         stats: None,
     })
 }

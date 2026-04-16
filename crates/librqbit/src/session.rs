@@ -291,6 +291,11 @@ pub struct AddTorrentOptions {
 
     // Custom trackers
     pub trackers: Option<Vec<String>>,
+
+    /// Unix timestamp (seconds) when the torrent was added to the session.
+    /// If None, the current time will be used.
+    #[serde(default)]
+    pub date_added: Option<u64>,
 }
 
 pub struct ListOnlyResponse {
@@ -1338,6 +1343,12 @@ impl Session {
             let span = debug_span!(parent: self.rs(), "torrent", id);
             let peer_opts = self.merge_peer_opts(opts.peer_opts);
             let metadata = Arc::new(metadata);
+            let date_added = opts.date_added.unwrap_or_else(|| {
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_secs()
+            });
             let minfo = Arc::new(ManagedTorrentShared {
                 id,
                 span,
@@ -1362,6 +1373,7 @@ impl Session {
                 session: Arc::downgrade(self),
                 magnet_name: name,
                 client_name_and_version: self.client_name_and_version.clone(),
+                date_added,
             });
 
             let initializing = Arc::new(TorrentStateInitializing::new(
