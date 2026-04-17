@@ -189,6 +189,8 @@
                 # already covers /var/lib/rqbit itself).
                 ExecStartPre = "+${pkgs.coreutils}/bin/install -d -m 750 -o ${cfg.user} -g ${cfg.group} ${cfg.outputFolder}";
 
+                Environment = [ "HOME=${cfg.persistenceLocation}" ];
+
                 ExecStart = lib.escapeShellArgs ([
                   "${pkg}/bin/rqbit"
                   "--http-api-listen-addr" cfg.httpListenAddr
