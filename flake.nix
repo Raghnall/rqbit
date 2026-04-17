@@ -191,10 +191,10 @@
 
                 ExecStart = lib.escapeShellArgs ([
                   "${pkg}/bin/rqbit"
+                  "--http-api-listen-addr" cfg.httpListenAddr
                   "server"
                   "start"
                   cfg.outputFolder
-                  "--http-api-listen-addr" cfg.httpListenAddr
                   "--persistence-location" cfg.persistenceLocation
                 ] ++ cfg.extraArgs);
 
