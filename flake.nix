@@ -184,6 +184,11 @@
               wantedBy = [ "multi-user.target" ];
 
               serviceConfig = {
+                # Create the output folder as root before dropping to the service
+                # user. This handles paths outside /var/lib/rqbit (StateDirectory
+                # already covers /var/lib/rqbit itself).
+                ExecStartPre = "+${pkgs.coreutils}/bin/install -d -m 750 -o ${cfg.user} -g ${cfg.group} ${cfg.outputFolder}";
+
                 ExecStart = lib.escapeShellArgs ([
                   "${pkg}/bin/rqbit"
                   "server"
@@ -203,13 +208,6 @@
                 RestartSec = "5s";
 
                 NoNewPrivileges = true;
-                PrivateTmp = true;
-                ProtectSystem = "strict";
-                ProtectHome = true;
-                ReadWritePaths = [
-                  cfg.outputFolder
-                  cfg.persistenceLocation
-                ];
               };
             };
           };
