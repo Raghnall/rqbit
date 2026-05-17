@@ -5,13 +5,20 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs }:
+  outputs =
+    { self, nixpkgs }:
     let
-      supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
+      ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
-      packages = forAllSystems (system:
+      packages = forAllSystems (
+        system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
           lib = pkgs.lib;
@@ -55,7 +62,8 @@
 
             nativeBuildInputs = [
               pkgs.installShellFiles
-            ] ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.pkg-config ];
+            ]
+            ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.pkg-config ];
 
             buildInputs = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.openssl ];
 
@@ -73,11 +81,16 @@
 
             # Default features include: webui, postgres, default-tls, prometheus.
             # postgres uses sqlx's pure-Rust driver — no libpq system dep needed.
-            cargoBuildFlags = [ "--package" "rqbit" ];
-            cargoTestFlags = [ "--package" "rqbit" ];
+            cargoBuildFlags = [
+              "--package"
+              "rqbit"
+            ];
+            cargoTestFlags = [
+              "--package"
+              "rqbit"
+            ];
 
-            postInstall = lib.optionalString
-              (pkgs.stdenv.buildPlatform.canExecute pkgs.stdenv.hostPlatform) ''
+            postInstall = lib.optionalString (pkgs.stdenv.buildPlatform.canExecute pkgs.stdenv.hostPlatform) ''
               for shell in bash fish zsh; do
                 installShellCompletion --cmd rqbit \
                   --$shell <($out/bin/rqbit completions $shell)
@@ -94,13 +107,20 @@
               platforms = lib.platforms.unix;
             };
           };
-        });
+        }
+      );
 
       overlays.default = final: prev: {
         rqbit = self.packages.${prev.system}.default;
       };
 
-      nixosModules.default = { config, lib, pkgs, ... }:
+      nixosModules.default =
+        {
+          config,
+          lib,
+          pkgs,
+          ...
+        }:
         let
           cfg = config.services.rqbit;
           pkg = cfg.package;
@@ -111,7 +131,7 @@
 
             package = lib.mkOption {
               type = lib.types.package;
-              default = self.packages.${pkgs.system}.default;
+              default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
               defaultText = lib.literalExpression "rqbit.packages.\${system}.default";
               description = "The rqbit package to use.";
             };
@@ -191,14 +211,19 @@
 
                 Environment = [ "HOME=${cfg.persistenceLocation}" ];
 
-                ExecStart = lib.escapeShellArgs ([
-                  "${pkg}/bin/rqbit"
-                  "--http-api-listen-addr" cfg.httpListenAddr
-                  "server"
-                  "start"
-                  cfg.outputFolder
-                  "--persistence-location" cfg.persistenceLocation
-                ] ++ cfg.extraArgs);
+                ExecStart = lib.escapeShellArgs (
+                  [
+                    "${pkg}/bin/rqbit"
+                    "--http-api-listen-addr"
+                    cfg.httpListenAddr
+                    "server"
+                    "start"
+                    cfg.outputFolder
+                    "--persistence-location"
+                    cfg.persistenceLocation
+                  ]
+                  ++ cfg.extraArgs
+                );
 
                 User = cfg.user;
                 Group = cfg.group;
