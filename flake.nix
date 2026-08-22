@@ -25,14 +25,14 @@
 
           rqbit-webui = pkgs.buildNpmPackage {
             pname = "rqbit-webui";
-            version = "9.0.0-beta.2";
+            version = "9.0.1";
 
             # The package-lock.json lives at the workspace root, not inside webui/.
             src = ./.;
 
             # Run: nix build .#packages.x86_64-linux.default 2>&1 | grep "got:"
             # to obtain the correct hash after any package-lock.json change.
-            npmDepsHash = "sha256-RiJ1mWg/dyczdXsdTgHV3Vf3zODF0DGYyKmhrwwMIJ0=";
+            npmDepsHash = "sha256-4q8u2B3HB19mBaEAVl9EDtt38e8aYHpUMADNaT98P7M=";
 
             # Build only the webui workspace package.
             buildPhase = ''
@@ -52,7 +52,7 @@
         {
           default = pkgs.rustPlatform.buildRustPackage {
             pname = "rqbit";
-            version = "9.0.0-beta.2";
+            version = "9.0.1";
 
             src = ./.;
 
